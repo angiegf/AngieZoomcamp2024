@@ -45,9 +45,9 @@ where rn = 1
 
 
 -- dbt build --select fact_trips --vars '{is_test_run: false}'
-{% if var('is_test_run', default=true) %} --if there's no value for is_test_run then use TRUE and by default add a limit 100, to get cheaper queries, great for production, 
+--{% if var('is_test_run', default=true) %} --if there's no value for is_test_run then use TRUE and by default add a limit 100, to get cheaper queries, great for production, 
 --dbt build --select <model_name> --vars '{'is_test_run': 'false'}' to deploy
 
-  limit 100
+ -- limit 100
 
-{% endif %}
+--{% endif %}
