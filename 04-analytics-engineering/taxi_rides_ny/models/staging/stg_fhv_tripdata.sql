@@ -6,24 +6,21 @@
 
 with tripdata as 
 (
-  select *,
-    row_number() over(partition by dispatching_base_num, pickup_datetime) as rn --making sure we have no duplicates
+  select *
   from {{ source('staging','fhv_tripdata') }}
 )
 select
     -- identifiers
-    {{ dbt_utils.generate_surrogate_key(['dispatching_base_num', 'pickup_datetime']) }} as tripid, -- as each taxi can only take one ride at the same time 
-    {{ dbt.safe_cast("dispatching_base_num", api.Column.translate_type("string")) }} as dispatching_base_num,
-    {{ dbt.safe_cast("Affiliated_base_number", api.Column.translate_type("string")) }} as affiliated_base_number,
-    {{ dbt.safe_cast("PUlocationID", api.Column.translate_type("integer")) }} as pickup_locationid,
-    {{ dbt.safe_cast("DOlocationID", api.Column.translate_type("integer")) }} as dropoff_locationid,
+    cast(dispatching_base_num as string) dispatching_base_num,
+    cast(PUlocationID as integer) as pickup_locationid,
+    cast(DOlocationID as integer )as dropoff_locationid,
     
     -- timestamps
-    TIMESTAMP_MILLIS(CASt(pickup_datetime/1000000 as INT)) as pickup_datetime,
-    TIMESTAMP_MILLIS(CASt(pickup_datetime/1000000 as INT)) as dropoff_datetime,
+    cast(pickup_datetime as timestamp) as pickup_datetime,
+    cast(dropOff_datetime as timestamp)  as dropoff_datetime,
     cast(coalesce(SR_Flag,0) as integer) as shared_ride_flag
 from tripdata
-where rn = 1
+where EXTRACT(YEAR FROM pickup_datetime) = 2019
 
 
 -- dbt build --select fact_trips --vars '{is_test_run: false}'
