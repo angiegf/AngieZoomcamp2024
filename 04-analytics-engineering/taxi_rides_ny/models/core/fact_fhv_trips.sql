@@ -15,7 +15,17 @@ with
     ),
 
     dim_zones as (select * from {{ ref("dim_zones") }} where borough != 'Unknown')
-select *
+select 
+    pickup_zone.borough as pickup_borough, 
+    pickup_zone.zone as pickup_zone, 
+    dropoff_zone.borough as dropoff_borough, 
+    dropoff_zone.zone as dropoff_zone,  
+    fhv_tripdata.dispatching_base_num,
+    fhv_tripdata.pickup_locationid,
+    fhv_tripdata.dropoff_locationid,
+    fhv_tripdata.pickup_datetime,
+    fhv_tripdata.dropoff_datetime,
+    fhv_tripdata.shared_ride_flag
 from fhv_tripdata
 inner join
     dim_zones as pickup_zone
