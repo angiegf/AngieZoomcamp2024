@@ -1,0 +1,1 @@
+select count(*) from (SELECT distinct * FROM `watchful-augury-411213.dbt_agf.fact_fhv_trips`)
