@@ -7,13 +7,13 @@
 with tripdata as 
 (
   select *,
-    row_number() over(partition by vendorid, lpep_pickup_datetime) as rn
+    row_number() over(partition by vendorid, lpep_pickup_datetime) as rn --making sure we have no duplicates
   from {{ source('staging','green_tripdata') }}
-  where vendorid is not null 
+  where vendorid is not null --removing any null data
 )
 select
     -- identifiers
-    {{ dbt_utils.generate_surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid,
+    {{ dbt_utils.generate_surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid, -- as each taxi can only take one ride at the same time 
     {{ dbt.safe_cast("vendorid", api.Column.translate_type("integer")) }} as vendorid,
     {{ dbt.safe_cast("ratecodeid", api.Column.translate_type("integer")) }} as ratecodeid,
     {{ dbt.safe_cast("pulocationid", api.Column.translate_type("integer")) }} as pickup_locationid,
@@ -44,9 +44,10 @@ from tripdata
 where rn = 1
 
 
--- dbt build --select <model_name> --vars '{'is_test_run': 'false'}'
-{% if var('is_test_run', default=true) %}
+-- dbt build --select fact_trips --vars '{is_test_run: false}'
+--{% if var('is_test_run', default=true) %} --if there's no value for is_test_run then use TRUE and by default add a limit 100, to get cheaper queries, great for production, 
+--dbt build --select <model_name> --vars '{'is_test_run': 'false'}' to deploy
 
-  limit 100
+ -- limit 100
 
-{% endif %}
+--{% endif %}
